@@ -2,108 +2,70 @@ package controller
 
 import (
 	"Desktop/lavina_tech_phase2/entity"
+	"Desktop/lavina_tech_phase2/service"
 
 	"github.com/gin-gonic/gin"
-)
+)	
 
-func CreateNewUser(ctx *gin.Context) gin.H {
-	var id = 32
-	var userData entity.User
-	ctx.BindJSON(&userData)
+var bookService service.BookService = service.NewBookList()
 
+func CreateNewUser(ctx *gin.Context, userId int) gin.H {
+	var user entity.User = userService.AddUser(ctx, userId)
 	return gin.H{
-		"data": gin.H{
-			"id": id,
-			"name": userData.Name,
-			"key": userData.Key,
-			"secret": userData.Secret,
-		},
+		"data": user,
 		"isOk": true,
 		"message": "ok",
 	}
 }
 
 func GetUserInfo(ctx *gin.Context) gin.H {
-	var id = 32
-	var userData entity.User
-	ctx.BindJSON(&userData)
-
+	var user entity.User = userService.FindUser(ctx)
 	return gin.H{
-		"data": gin.H{
-			"id": id,
-			"name": userData.Name,
-			"key": userData.Key,
-			"secret": userData.Secret,
-		},
+		"data": user,
 		"isOk": true,
 		"message": "ok",
 	}
 }
 
-func CreateABook(ctx *gin.Context) gin.H {
-	var id = 32
-	var userData entity.User
-	ctx.BindJSON(&userData)
-
+func CreateABook(ctx *gin.Context, bookId int) gin.H {
+	var bookInfo entity.BookInfo = bookService.AddBook(ctx, bookId)
 	return gin.H{
-		"data": gin.H{
-			"id": id,
-			"name": userData.Name,
-			"key": userData.Key,
-			"secret": userData.Secret,
-		},
+		"data": bookInfo,
 		"isOk": true,
 		"message": "ok",
 	}
 }
 
-func GetAllBooks(ctx *gin.Context) gin.H {
-	var id = 32
-	var userData entity.User
-	ctx.BindJSON(&userData)
-
+func GetAllBooks() gin.H{
+	var books []entity.BookInfo = bookService.ListBooks()
 	return gin.H{
-		"data": gin.H{
-			"id": id,
-			"name": userData.Name,
-			"key": userData.Key,
-			"secret": userData.Secret,
-		},
+		"data": books,
 		"isOk": true,
 		"message": "ok",
 	}
 }
 
-func EditABook(ctx *gin.Context) gin.H {
-	var id = 32
-	var userData entity.User
-	ctx.BindJSON(&userData)
-
+func EditABook(ctx *gin.Context, bookId string) gin.H {
+	var bookInfo entity.BookInfo = bookService.UpdateBook(ctx, bookId)
 	return gin.H{
-		"data": gin.H{
-			"id": id,
-			"name": userData.Name,
-			"key": userData.Key,
-			"secret": userData.Secret,
-		},
+		"data": bookInfo,
 		"isOk": true,
 		"message": "ok",
 	}
 }
 
-func DeleteABook(ctx *gin.Context) gin.H {
-	var id = 32
-	var userData entity.User
-	ctx.BindJSON(&userData)
-
-	return gin.H{
-		"data": gin.H{
-			"id": id,
-			"name": userData.Name,
-			"key": userData.Key,
-			"secret": userData.Secret,
-		},
-		"isOk": true,
-		"message": "ok",
+func DeleteABook(ctx *gin.Context, bookId string) gin.H {
+	if bookService.RemoveBook(ctx, bookId) {
+		return gin.H{
+			"data": "Successfully deleted",
+			"isOk": true,
+			"message": "ok",
+		} 
+	} else {
+		return gin.H{
+			"data": "There is no book with such ID",
+			"isOk": true,
+			"message": "ok",
+		}
 	}
 }
