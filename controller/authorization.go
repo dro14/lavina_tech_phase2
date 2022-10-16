@@ -1,26 +1,32 @@
 package controller
 
 import (
-	"github.com/dro14/lavina_tech_phase2/entity"
-	"github.com/dro14/lavina_tech_phase2/service"
 	"crypto/md5"
 	"fmt"
+	"io"
+	"strings"
+
+	"github.com/dro14/lavina_tech_phase2/entity"
+	"github.com/dro14/lavina_tech_phase2/service"
 
 	"github.com/gin-gonic/gin"
 )
 
 var userService service.UserService = service.NewUserList()
 
-func Authorize(method string, url string) bool {
-	var ctx *gin.Context
-	
+func Authorize(ctx *gin.Context, method string, url string) bool {
 	var user entity.User = userService.FindUser(ctx)
 	if user.ID == 0 {
 		return false
 	}
 
-	var body string
-	ctx.BindJSON(&body)
+	request, _ := io.ReadAll(ctx.Request.Body)
+
+	var body string = string(request)
+	body = strings.ReplaceAll(body, " ", "")
+	body = strings.ReplaceAll(body, "\n", "")
+	body = strings.ReplaceAll(body, "\t", "")
+
 	var secret string = user.Secret
 	
 	var stringToSign string = method + url + body + secret

@@ -1,45 +1,38 @@
 package main
 
 import (
-	"github.com/dro14/lavina_tech_phase2/controller"
 	"net/http"
+
+	"github.com/dro14/lavina_tech_phase2/controller"
 
 	"github.com/gin-gonic/gin"
 )
 
-const URL string = "https://lavina-tech-phase2.herokuapp.com"
+const URL string = "http://localhost:5000"
 var tempUrl string = URL
 var userId int = 1
 var bookId int = 1
+
+const messageFor401 string = "Unauthorized, permission denied. Enter the following credentials as headers: Key: {Key}, Sign: {Sign}"
+
 
 func main() {
 	server := gin.Default()
 
 	server.POST("/signup", func(ctx *gin.Context) {
 		tempUrl += "/signup"
-		if controller.Authorize("POST", tempUrl) {
-			ctx.JSON(http.StatusOK, controller.CreateNewUser(ctx, userId))
-			userId++
-		} else {
-			ctx.JSON(http.StatusUnauthorized,
-				"Unauthorized, permission denied.\n" +
-				"Enter the following credentials as headers:\n" +
-				"Key: {Key}\n" +
-				"Sign: {Sign}\n")
-		}
+		ctx.JSON(http.StatusOK, controller.CreateNewUser(ctx, userId))
+		userId++
 		tempUrl = URL
 	})
 
 	server.GET("/myself", func(ctx *gin.Context) {
 		tempUrl += "/myself"
-		if controller.Authorize("GET", tempUrl) {
+		if controller.Authorize(ctx, "GET", tempUrl) {
 			ctx.JSON(http.StatusOK, controller.GetUserInfo(ctx))
 		} else {
-			ctx.JSON(http.StatusUnauthorized,
-				"Unauthorized, permission denied.\n" +
-				"Enter the following credentials as headers:\n" +
-				"Key: {Key}\n" +
-				"Sign: {Sign}\n")
+			// request, _ := ioutil.ReadAll(ctx.Request.Body)
+			ctx.JSON(http.StatusUnauthorized, messageFor401)
 		}
 		tempUrl = URL
 	})
@@ -48,29 +41,23 @@ func main() {
 	{
 		bookRoutes.POST("", func(ctx *gin.Context) {
 			tempUrl += "/books"
-			if controller.Authorize("POST", tempUrl) {
+			if controller.Authorize(ctx, "POST", tempUrl) {
 				ctx.JSON(http.StatusOK, controller.CreateABook(ctx, bookId))
 				bookId++
 			} else {
-				ctx.JSON(http.StatusUnauthorized,
-					"Unauthorized, permission denied.\n" +
-					"Enter the following credentials as headers:\n" +
-					"Key: {Key}\n" +
-					"Sign: {Sign}\n")
+				// request, _ := ioutil.ReadAll(ctx.Request.Body)
+				ctx.JSON(http.StatusUnauthorized, messageFor401)
 			}
 			tempUrl = URL
 		})
 
 		bookRoutes.GET("", func(ctx *gin.Context) {
 			tempUrl += "/books"
-			if controller.Authorize("GET", tempUrl) {
+			if controller.Authorize(ctx, "GET", tempUrl) {
 				ctx.JSON(http.StatusOK, controller.GetAllBooks())
 			} else {
-				ctx.JSON(http.StatusUnauthorized,
-					"Unauthorized, permission denied.\n" +
-					"Enter the following credentials as headers:\n" +
-					"Key: {Key}\n" +
-					"Sign: {Sign}\n")
+				// request, _ := ioutil.ReadAll(ctx.Request.Body)
+				ctx.JSON(http.StatusUnauthorized, messageFor401)
 			}
 			tempUrl = URL
 		})
@@ -78,29 +65,23 @@ func main() {
 		bookRoutes.PATCH("/:id", func(ctx *gin.Context) {
 			bookId := ctx.Param("id")
 			tempUrl += "/books/" + bookId
-			if controller.Authorize("PATCH", tempUrl) {
+			if controller.Authorize(ctx, "PATCH", tempUrl) {
 				ctx.JSON(http.StatusOK, controller.EditABook(ctx, bookId))
 			} else {
-				ctx.JSON(http.StatusUnauthorized,
-					"Unauthorized, permission denied.\n" +
-					"Enter the following credentials as headers:\n" +
-					"Key: {Key}\n" +
-					"Sign: {Sign}\n")
+				// request, _ := ioutil.ReadAll(ctx.Request.Body)
+				ctx.JSON(http.StatusUnauthorized, messageFor401)
 			}
 			tempUrl = URL
 		})
 
-		bookRoutes.DELETE("/:id", func(ctx *gin.Context) {
+		bookRoutes.GET("/:id", func(ctx *gin.Context) {
 			bookId := ctx.Param("id")
 			tempUrl += "/books/" + bookId
-			if controller.Authorize("PATCH", tempUrl) {
+			if controller.Authorize(ctx, "GET", tempUrl) {
 				ctx.JSON(http.StatusOK, controller.DeleteABook(ctx, bookId))
 			} else {
-				ctx.JSON(http.StatusUnauthorized,
-					"Unauthorized, permission denied.\n" +
-					"Enter the following credentials as headers:\n" +
-					"Key: {Key}\n" +
-					"Sign: {Sign}\n")
+				// request, _ := ioutil.ReadAll(ctx.Request.Body)
+				ctx.JSON(http.StatusUnauthorized, messageFor401)
 			}
 			tempUrl = URL
 		})

@@ -34,5 +34,5 @@ func (service *userService) FindUser(ctx *gin.Context) entity.User {
 			return user
 		}
 	}
-	return entity.User{ ID: 0, }
+	return entity.User{ID: 0}
 }
