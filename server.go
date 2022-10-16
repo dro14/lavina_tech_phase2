@@ -7,38 +7,102 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var userId int = 32
-var bookId int = 21
+const URL string = "https://lavina-tech-phase2.herokuapp.com"
+var tempUrl string = URL
+var userId int = 1
+var bookId int = 1
 
 func main() {
 	server := gin.Default()
 
 	server.POST("/signup", func(ctx *gin.Context) {
-		ctx.JSON(http.StatusOK, controller.CreateNewUser(ctx, userId))
+		tempUrl += "/signup"
+		if controller.Authorize("POST", tempUrl) {
+			ctx.JSON(http.StatusOK, controller.CreateNewUser(ctx, userId))
+			userId++
+		} else {
+			ctx.JSON(http.StatusUnauthorized,
+				"Unauthorized, permission denied.\n" +
+				"Enter the following credentials as headers:\n" +
+				"Key: {Key}\n" +
+				"Sign: {Sign}\n")
+		}
+		tempUrl = URL
 	})
 
 	server.GET("/myself", func(ctx *gin.Context) {
-		ctx.JSON(http.StatusOK, controller.GetUserInfo(ctx))
+		tempUrl += "/myself"
+		if controller.Authorize("GET", tempUrl) {
+			ctx.JSON(http.StatusOK, controller.GetUserInfo(ctx))
+		} else {
+			ctx.JSON(http.StatusUnauthorized,
+				"Unauthorized, permission denied.\n" +
+				"Enter the following credentials as headers:\n" +
+				"Key: {Key}\n" +
+				"Sign: {Sign}\n")
+		}
+		tempUrl = URL
 	})
 
 	bookRoutes := server.Group("/books")
 	{
 		bookRoutes.POST("", func(ctx *gin.Context) {
-			ctx.JSON(http.StatusOK, controller.CreateABook(ctx, bookId))
+			tempUrl += "/books"
+			if controller.Authorize("POST", tempUrl) {
+				ctx.JSON(http.StatusOK, controller.CreateABook(ctx, bookId))
+				bookId++
+			} else {
+				ctx.JSON(http.StatusUnauthorized,
+					"Unauthorized, permission denied.\n" +
+					"Enter the following credentials as headers:\n" +
+					"Key: {Key}\n" +
+					"Sign: {Sign}\n")
+			}
+			tempUrl = URL
 		})
 
 		bookRoutes.GET("", func(ctx *gin.Context) {
-			ctx.JSON(http.StatusOK, controller.GetAllBooks())
+			tempUrl += "/books"
+			if controller.Authorize("GET", tempUrl) {
+				ctx.JSON(http.StatusOK, controller.GetAllBooks())
+			} else {
+				ctx.JSON(http.StatusUnauthorized,
+					"Unauthorized, permission denied.\n" +
+					"Enter the following credentials as headers:\n" +
+					"Key: {Key}\n" +
+					"Sign: {Sign}\n")
+			}
+			tempUrl = URL
 		})
 
 		bookRoutes.PATCH("/:id", func(ctx *gin.Context) {
 			bookId := ctx.Param("id")
-			ctx.JSON(http.StatusOK, controller.EditABook(ctx, bookId))
+			tempUrl += "/books/" + bookId
+			if controller.Authorize("PATCH", tempUrl) {
+				ctx.JSON(http.StatusOK, controller.EditABook(ctx, bookId))
+			} else {
+				ctx.JSON(http.StatusUnauthorized,
+					"Unauthorized, permission denied.\n" +
+					"Enter the following credentials as headers:\n" +
+					"Key: {Key}\n" +
+					"Sign: {Sign}\n")
+			}
+			tempUrl = URL
 		})
 
 		bookRoutes.DELETE("/:id", func(ctx *gin.Context) {
 			bookId := ctx.Param("id")
-			ctx.JSON(http.StatusOK, controller.DeleteABook(ctx, bookId))
+			tempUrl += "/books/" + bookId
+			if controller.Authorize("PATCH", tempUrl) {
+				ctx.JSON(http.StatusOK, controller.DeleteABook(ctx, bookId))
+			} else {
+				ctx.JSON(http.StatusUnauthorized,
+					"Unauthorized, permission denied.\n" +
+					"Enter the following credentials as headers:\n" +
+					"Key: {Key}\n" +
+					"Sign: {Sign}\n")
+			}
+			tempUrl = URL
 		})
 	}
 
