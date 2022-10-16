@@ -1,0 +1,1 @@
+web: bin/lavina_tech_phase2

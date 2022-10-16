@@ -1,8 +1,8 @@
 package controller
 
 import (
-	"Desktop/lavina_tech_phase2/entity"
-	"Desktop/lavina_tech_phase2/service"
+	"github.com/dro14/lavina_tech_phase2/entity"
+	"github.com/dro14/lavina_tech_phase2/service"
 	"crypto/md5"
 	"fmt"
 

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"Desktop/lavina_tech_phase2/controller"
+	"github.com/dro14/lavina_tech_phase2/controller"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
