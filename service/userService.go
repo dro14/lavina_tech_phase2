@@ -98,9 +98,5 @@ func (service *userService) GenerateMD5(ctx *gin.Context, method string, url str
 		hash += fmt.Sprintf("%x", value)
 	}
 
-	if len(body) == 0 {
-		body = "{}"
-	}
-
 	return hash, body
 }
