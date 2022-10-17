@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-const hostURL string = "http://localhost:5000"
+const hostURL string = "https://lavina-tech-phase2.herokuapp.com"
 
 var (
 	userId      int                   = 1
