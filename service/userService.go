@@ -91,7 +91,7 @@ func (service *userService) GenerateMD5(ctx *gin.Context, method string, url str
 	trimmedBody = strings.ReplaceAll(trimmedBody, "\":", ":")
 
 	// Encrypting the string to sign using MD5 algorithm
-	var stringToSign string = method + url + trimmedBody + secret
+	var stringToSign string = method + url + body + secret
 	var data = md5.Sum([]byte(stringToSign))
 	var hash string
 	for _, value := range data {
