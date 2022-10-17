@@ -1,4 +1,4 @@
-module github.com/dro14/lavina_tech_phase2
+module Desktop/lavina_tech_phase2
 
 go 1.19
 

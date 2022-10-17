@@ -3,89 +3,99 @@ package main
 import (
 	"net/http"
 
-	"github.com/dro14/lavina_tech_phase2/controller"
+	"Desktop/lavina_tech_phase2/controller"
+	"Desktop/lavina_tech_phase2/service"
 
 	"github.com/gin-gonic/gin"
 )
 
-const URL string = "http://localhost:5000"
-var tempUrl string = URL
-var userId int = 1
-var bookId int = 1
+const hostURL string = "http://localhost:5000"
 
-const messageFor401 string = "Unauthorized, permission denied. Enter the following credentials as headers: Key: {Key}, Sign: {Sign}"
-
+var (
+	userId      int                   = 1
+	bookId      int                   = 1
+	tempUrl     string                = hostURL
+	userService service.UserService   = service.NewUserList()
+	bookService service.BookService   = service.NewBookList()
+	_controller controller.Controller = controller.NewController(userService, bookService)
+)
 
 func main() {
-	server := gin.Default()
+	var server *gin.Engine = gin.Default()
 
+	// POST Create new user
 	server.POST("/signup", func(ctx *gin.Context) {
-		tempUrl += "/signup"
-		ctx.JSON(http.StatusOK, controller.CreateNewUser(ctx, userId))
-		userId++
-		tempUrl = URL
+		ctx.JSON(http.StatusOK, _controller.CreateNewUser(ctx, &userId))
 	})
 
+	// GET Get user info
 	server.GET("/myself", func(ctx *gin.Context) {
 		tempUrl += "/myself"
-		if controller.Authorize(ctx, "GET", tempUrl) {
-			ctx.JSON(http.StatusOK, controller.GetUserInfo(ctx))
-		} else {
-			// request, _ := ioutil.ReadAll(ctx.Request.Body)
-			ctx.JSON(http.StatusUnauthorized, messageFor401)
+		isAuthorized, _ := _controller.AuthorizeUser(ctx, "GET", tempUrl)
+		if isAuthorized {
+			ctx.JSON(http.StatusOK, _controller.GetUserInfo(ctx))
 		}
-		tempUrl = URL
+		tempUrl = hostURL
 	})
 
-	bookRoutes := server.Group("/books")
+	var bookRoutes *gin.RouterGroup = server.Group("/books")
 	{
+		// POST Create a book
 		bookRoutes.POST("", func(ctx *gin.Context) {
 			tempUrl += "/books"
-			if controller.Authorize(ctx, "POST", tempUrl) {
-				ctx.JSON(http.StatusOK, controller.CreateABook(ctx, bookId))
-				bookId++
-			} else {
-				// request, _ := ioutil.ReadAll(ctx.Request.Body)
-				ctx.JSON(http.StatusUnauthorized, messageFor401)
+			isAuthorized, body := _controller.AuthorizeUser(ctx, "POST", tempUrl)
+			if isAuthorized {
+				ctx.JSON(http.StatusOK, _controller.CreateABook(ctx, &bookId, body))
 			}
-			tempUrl = URL
+			tempUrl = hostURL
 		})
 
+		// GET Get all books
 		bookRoutes.GET("", func(ctx *gin.Context) {
 			tempUrl += "/books"
-			if controller.Authorize(ctx, "GET", tempUrl) {
-				ctx.JSON(http.StatusOK, controller.GetAllBooks())
-			} else {
-				// request, _ := ioutil.ReadAll(ctx.Request.Body)
-				ctx.JSON(http.StatusUnauthorized, messageFor401)
+			isAuthorized, _ := _controller.AuthorizeUser(ctx, "GET", tempUrl)
+			if isAuthorized {
+				ctx.JSON(http.StatusOK, _controller.GetAllBooks(ctx))
 			}
-			tempUrl = URL
+			tempUrl = hostURL
 		})
 
+		// PATCH Edit a book
 		bookRoutes.PATCH("/:id", func(ctx *gin.Context) {
 			bookId := ctx.Param("id")
 			tempUrl += "/books/" + bookId
-			if controller.Authorize(ctx, "PATCH", tempUrl) {
-				ctx.JSON(http.StatusOK, controller.EditABook(ctx, bookId))
-			} else {
-				// request, _ := ioutil.ReadAll(ctx.Request.Body)
-				ctx.JSON(http.StatusUnauthorized, messageFor401)
+			isAuthorized, body := _controller.AuthorizeUser(ctx, "PATCH", tempUrl)
+			if isAuthorized {
+				ctx.JSON(http.StatusOK, _controller.EditABook(ctx, bookId, body))
 			}
-			tempUrl = URL
+			tempUrl = hostURL
 		})
 
-		bookRoutes.GET("/:id", func(ctx *gin.Context) {
+		// GET Delete a book
+		bookRoutes.DELETE("/:id", func(ctx *gin.Context) {
 			bookId := ctx.Param("id")
 			tempUrl += "/books/" + bookId
-			if controller.Authorize(ctx, "GET", tempUrl) {
-				ctx.JSON(http.StatusOK, controller.DeleteABook(ctx, bookId))
-			} else {
-				// request, _ := ioutil.ReadAll(ctx.Request.Body)
-				ctx.JSON(http.StatusUnauthorized, messageFor401)
+			isAuthorized, _ := _controller.AuthorizeUser(ctx, "DEL", tempUrl)
+			if isAuthorized {
+				ctx.JSON(http.StatusOK, _controller.DeleteABook(ctx, bookId))
 			}
-			tempUrl = URL
+			tempUrl = hostURL
 		})
 	}
+
+	// GET Clean up
+	server.GET("/cleanup", func(ctx *gin.Context) {
+		userId = 1
+		bookId = 1
+		tempUrl = hostURL
+		userService = service.NewUserList()
+		bookService = service.NewBookList()
+		_controller = controller.NewController(userService, bookService)
+
+		ctx.JSON(http.StatusOK, gin.H{
+			"message": "All are cleaned up!",
+		})
+	})
 
 	server.Run()
 }
